@@ -1,132 +1,97 @@
-var balloon,balloonImage1,balloonImage2;
-var database;
-var height;
+const Engine = Matter.Engine;
+const World= Matter.World;
+const Bodies = Matter.Bodies;
+const Constraint = Matter.Constraint;
 
-function preload(){
-   bg =loadImage("cityImage.png");
-   balloonImage1=loadAnimation("hotAirballoon1.png");
-   balloonImage2=loadAnimation("hotAirballoon1.png",
-   "hotAirballoon2.png","hotAirballoon2.png",
-   "hotAirballoon2.png","hotAirballoon3.png","hotAirballoon3.png");
-  }
+var engine, world;
+var backgroundImg;
+var hour;
 
-//Function to set initial environment
-function setup() {
+var bg = "sunrise1.png";
 
-   database=firebase.database();
-  // database=firebase();(())
-  // database=database();
-  // database=firebase.db();
-
-  createCanvas(1500,700);
-
-  balloon=createSprite(250,650,150,150);
-  balloon.addAnimation("hotAirBalloon",balloonImage1);
-  balloon.scale=0.5;
-
-  // var balloonHeight=database.ref('balloon/height');
-  // balloonHeight.on("value", showError);
-
-  // var balloonHeight=database.ref('balloon/height');
-  // balloonHeight.on("value",readHeight);
-
-  // var balloonHeight=database.ref('balloon/height');
-  // balloonHeight.on(readHeight, showError);
-
-  var balloonHeight=database.ref('balloon/height');
-  balloonHeight.on("value",readHeight, showError);
-
-
-
-  textSize(20); 
+function preload() {
+    // create getBackgroundImg( ) here
+    getBackgroundImg();
 }
 
-// function to display UI
-function draw() {
-  background(bg);
+function setup(){
+    var canvas = createCanvas(1200,700);
+    engine = Engine.create();
+    world = engine.world;
 
-  if(keyDown(LEFT_ARROW)){
-    updateHeight(-10,0);
-    balloon.addAnimation("hotAirBalloon",balloonImage2);
-  }
-  else if(keyDown(RIGHT_ARROW)){
-    updateHeight(10,0);
-    balloon.addAnimation("hotAirBalloon",balloonImage2);
-  }
-  else if(keyDown(UP_ARROW)){
-    updateHeight(0,-10);
-    balloon.addAnimation("hotAirBalloon",balloonImage2);
-    balloon.scale=balloon.scale -0.005;
-  }
-  else if(keyDown(DOWN_ARROW)){
-    updateHeight(0,+10);
-    balloon.addAnimation("hotAirBalloon",balloonImage2);
-    balloon.scale=balloon.scale+0.005;
-  }
-
-  drawSprites();
-  fill(0);
-  stroke("white");
-  textSize(25);
-  text("**Use arrow keys to move Hot Air Balloon!",40,40);
 }
 
-//CHOOSE THE CORRECT UPDATEHEIGHT FUNCTION
-// function updateHeight(x,y){
-//   database.ref('balloon/height').set({
-//     'x': height.x ,
-//     'y': height.y 
-//   })
-// }
+function draw(){
+     // add condition to check if any background image is there to add
+    if(backgroundImg)
+    background(backgroundImg);
 
-// function updateHeight(x,y){
-//   database.ref('balloon/height')({
-//     'x': height.x + x ,
-//     'y': height.y + y
-//   })
-// }
+    Engine.update(engine);
+    // write code to display time in correct format here
+    fill("black");
+    textSize(30);
 
+    if(hour>=12){
+        text("Time : "+ hour%12 + " PM", 50,100);
+       }else if(hour==0){
+         text("Time : 12 AM",100,100);
+       }else{
+        text("Time : "+ hour%12 + " AM", 50,100);
+       }
 
-function updateHeight(x,y){
-  database.ref('balloon/height').set({
-    'x': height.x + x ,
-    'y': height.y + y
-  })
 }
 
+async function getBackgroundImg(){
 
-// function updateHeight(x,y){
-//   database.ref().set({
-//     'x': height.x + x ,
-//     'y': height.y + y
-//   })
-// }
+    // write code to fetch time from API
+    var response = await fetch("http://worldtimeapi.org/api/timezone/Asia/Kolkata");
 
+    //change the data in JSON format
+    var responseJSON = await response.json();
+    var datetime = responseJSON.datetime;
+    
+    // write code slice the datetime
+    hour = datetime.slice(11,13);
 
+    // add conditions to change the background images from sunrise to sunset
+    if(hour>=04 && hour<=06 ){
+        debugger;
+        bg = "sunrise1.png";
+    }else if(hour>=06 && hour<=08 ){
+        debugger;
+        bg = "sunrise2.png";
+    }else if(hour>=08 && hour<=11 ){
+        debugger;
+        bg = "sunrise3.png";
+    }else if(hour>=11 && hour<=13){
+        debugger;
+        bg = "sunrise4.png";
+    }else if(hour>=13 && hour<=15){
+        debugger;
+        bg = "sunrise5.png";
+    }else if(hour>=15 && hour<=17 ){
+        debugger;
+        bg = "sunrise6.png";
+    }else if(hour>=17 && hour<=18 ){
+        debugger;
+        bg = "sunset7.png";
+    }else if(hour>=18 && hour<=20 ){
+        debugger;
+        bg = "sunset8.png";
+    }else if(hour>=20 && hour<=23 ){
+        debugger;
+        bg = "sunset9.png";
+    }else if(hour>=23 && hour==0){
+        debugger;
+        bg = "sunset10.png";
+    }else if(hour==0 && hour<=03){
+        debugger;
+        bg = "sunset11.png";
+    }else{
+        debugger;
+        bg = "sunset12.png";
+    }
 
-
-//CHOOSE THE CORRECT READHEIGHT FUNCTION
-// function readHeight(data){
-//   balloon.x = height.x;
-//   balloon.y = height.y;
-// }
-
-function readHeight(data){
-  height = data.val();
-  balloon.x = height.x;
-  balloon.y = height.y;
-}
-
-// function readHeight(data){
-//   height = data.val();
-// }
-
-// function readHeight(){
-//   height = val();
-//   balloon.x = height.x;
-//   balloon.y = height.y;
-// }
-
-function showError(){
-  console.log("Error in writing to the database");
+    //load the image in backgroundImg variable here
+    backgroundImg = loadImage(bg);
 }
